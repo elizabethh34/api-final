@@ -20,7 +20,7 @@ function getPossibleLocations(userSearch) {
 function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
   locationsObjArr.forEach(locationObj => {
     elemToAttachTo.insertAdjacentHTML('beforeend',
-    `<li data-long="${locationObj.center[0]}" data-lat="${locationObj.center[1]}">
+    `<li class="location" data-long="${locationObj.center[0]}" data-lat="${locationObj.center[1]}">
       <div class="name">${locationObj.text}</div>
       <div>${locationObj.properties.address}</div>
     </li>`);
@@ -39,6 +39,15 @@ function displayLocationInfo(inputElem, elemToAttachTo) {
   })
 }
 
+function changeSelectedClass(element, listType) {
+  element.classList.add('selected');
+  const allSelected = document.querySelectorAll(`.${listType} .selected`);
+  allSelected.forEach(item => {
+    item.classList.remove('selected');
+  });
+  element.classList.add('selected');
+}
+
 originFormElem.addEventListener('submit', event => {
   event.preventDefault();
   displayLocationInfo(originInputElem, originsListElem);
@@ -50,6 +59,12 @@ destinationFormElem.addEventListener('submit', event => {
 });
 
 originsListElem.addEventListener('click', event => {
+  const clickedLocation = event.target.closest('.location');
+  changeSelectedClass(clickedLocation, 'origins');  
+});
 
+destinationsListElem.addEventListener('click', event => {
+  const clickedLocation = event.target.closest('.location');
+  changeSelectedClass(clickedLocation, 'destinations');
 });
 
