@@ -4,6 +4,7 @@ const destinationFormElem = document.querySelector('.destination-form');
 const destinationInputElem = document.querySelector('.destination-form input');
 const originsListElem = document.querySelector('.origins');
 const destinationsListElem = document.querySelector('.destinations');
+const planTripButton = document.querySelector('.plan-trip'); 
 const mapboxBaseUrl = 'https://api.mapbox.com/geocoding/v5/';
 const mapboxEndpoint = 'mapbox.places/';
 const mapboxLimitParam = 'limit=10';
@@ -16,7 +17,7 @@ function getPossibleLocations(userSearch) {
   .then(data => data.features)
 }
 
-function displayLocations(locationsObjArr, elemToAttachTo) {
+function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
   locationsObjArr.forEach(locationObj => {
     elemToAttachTo.insertAdjacentHTML('beforeend',
     `<li data-long="${locationObj.center[0]}" data-lat="${locationObj.center[1]}">
@@ -30,22 +31,25 @@ function clearLists(element) {
   element.innerHTML = '';
 }
 
+function displayLocationInfo(inputElem, elemToAttachTo) {
+  getPossibleLocations(inputElem.value)
+  .then(locationData => {
+    clearLists(elemToAttachTo);
+    renderLocationsHTML(locationData, elemToAttachTo);
+  })
+}
+
 originFormElem.addEventListener('submit', event => {
   event.preventDefault();
-  getPossibleLocations(originInputElem.value)
-  .then(locationData => {
-    clearLists(originsListElem);
-    displayLocations(locationData, originsListElem);
-  })
-
+  displayLocationInfo(originInputElem, originsListElem);
 });
 
 destinationFormElem.addEventListener('submit', event => {
   event.preventDefault();
-  getPossibleLocations(destinationInputElem.value)
-  .then(locationData => {
-    clearLists(destinationsListElem);
-    displayLocations(locationData, destinationsListElem);
-  })
+  displayLocationInfo(destinationInputElem, destinationsListElem);
+});
+
+originsListElem.addEventListener('click', event => {
+
 });
 
