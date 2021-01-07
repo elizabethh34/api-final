@@ -26,7 +26,6 @@ function getPossibleLocationsData(userSearch) {
 function getTripData(originLat, originLon, DestLat, DestLon) {
   return fetch(`${transitBaseUrl}${transitEndpoint}.json?${transitAPIKey}&${transitOriginParam}${originLat},${originLon}&${transitDestinationParam}${DestLat},${DestLon}`)
   .then(response => response.json())
-  .then(data => console.log(data))
 }
 
 function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
@@ -75,8 +74,12 @@ function checkForUserSelection() {
   
   if (selectedOrigins.length === 0) {
     tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a starting location.</li>');
+    return false;
   } else if (selectedDestinations.length === 0) {
     tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a destination.</li>');
+    return false;
+  } else {
+    return true;
   }
 }
 
@@ -116,7 +119,50 @@ function callTripData() {
   originLongitude = selectedOrigin.getAttribute('data-long');
   destinationLatitude = selectedDestination.getAttribute('data-lat');
   destinationLongitude = selectedDestination.getAttribute('data-long');
-  getTripData(originLatitude, originLongitude, destinationLatitude,destinationLongitude);
+  return getTripData(originLatitude, originLongitude, destinationLatitude,destinationLongitude);
+}
+
+function parseTripData(tripData) {
+  let parsedTripData;
+
+  parsedTripData = tripData.plans.map(plan => { 
+    return {
+      number: plan.number,
+      segments: parseSegmentsData(plan.segments),
+    }
+  });
+  return parsedTripData;
+}
+
+function parseSegmentsData(segmentPlan) {
+  let parsedSegments;
+
+  parsedSegments = segmentPlan.map(segment => {
+    if (segment.type === 'walk') {
+      return {
+        type: segment.type,
+        time: segment.times.durations.walking,
+        stopNumber: 'stop number',
+        stopName: 'stop name',
+      }
+    } else if (segment.type === 'ride') {
+      return {
+        type: segment.type,
+        time: segment.times.durations.riding,
+        route: `Route ${segment.route.number}`,
+        routeName: segment.route.name,
+      }
+    } else if (segment.type === 'transfer') {
+      return {
+        type: segment.type,
+        fromStopNum: segment.from.stop.key,
+        fromStopName: segment.from.stop.name,
+        toStopNum: segment.to.stop.key,
+        toStopName: segment.to.stop.name,
+      }
+    }
+  })
+  return parsedSegments;
 }
 
 originFormElem.addEventListener('submit', event => {
@@ -140,7 +186,10 @@ destinationsListElem.addEventListener('click', event => {
 });
 
 planTripButton.addEventListener('click', () => {
-  checkForUserSelection();
-  callTripData();
+  if (checkForUserSelection()) {
+    callTripData()
+    .then(tripData => parseTripData(tripData))
+    .then(data => console.log(data))
+  } 
 });
 
