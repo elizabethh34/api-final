@@ -4,7 +4,8 @@ const destinationFormElem = document.querySelector('.destination-form');
 const destinationInputElem = document.querySelector('.destination-form input');
 const originsListElem = document.querySelector('.origins');
 const destinationsListElem = document.querySelector('.destinations');
-const planTripButton = document.querySelector('.plan-trip'); 
+const planTripButton = document.querySelector('.plan-trip');
+const tripListElem = document.querySelector('.my-trip');
 const mapboxBaseUrl = 'https://api.mapbox.com/geocoding/v5/';
 const mapboxEndpoint = 'mapbox.places/';
 const mapboxLimitParam = 'limit=10';
@@ -22,9 +23,17 @@ function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
     elemToAttachTo.insertAdjacentHTML('beforeend',
     `<li class="location" data-long="${locationObj.center[0]}" data-lat="${locationObj.center[1]}">
       <div class="name">${locationObj.text}</div>
-      <div>${locationObj.properties.address}</div>
+      <div>${checkIfLocationHasAddress(locationObj)}</div>
     </li>`);
   });
+}
+
+function checkIfLocationHasAddress(locationObj) {
+  if (locationObj.properties.address === undefined) {
+    return 'Winnipeg';
+  } else {
+    return locationObj.properties.address;
+  }
 }
 
 function clearLists(element) {
@@ -48,6 +57,18 @@ function changeSelectedClass(element, listType) {
   element.classList.add('selected');
 }
 
+function checkForUserSelection() {
+  const selectedOrigins = document.querySelectorAll('.origins .selected');
+  const selectedDestinations = document.querySelectorAll('.destinations .selected');
+  tripListElem.innerHTML = '';
+  
+  if (selectedOrigins.length === 0) {
+    tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a starting location.</li>');
+  } else if (selectedDestinations.length === 0) {
+    tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a destination.</li>');
+  }
+}
+
 originFormElem.addEventListener('submit', event => {
   event.preventDefault();
   displayLocationInfo(originInputElem, originsListElem);
@@ -67,4 +88,8 @@ destinationsListElem.addEventListener('click', event => {
   const clickedLocation = event.target.closest('.location');
   changeSelectedClass(clickedLocation, 'destinations');
 });
+
+planTripButton.addEventListener('click', event => {
+  checkForUserSelection()
+})
 
