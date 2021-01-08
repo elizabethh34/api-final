@@ -125,7 +125,7 @@ function callTripData() {
 function parseTripData(tripData) {
   let parsedTripData;
 
-  parsedTripData = tripData.plans.map(plan => { 
+  parsedTripData = tripData.plans.map(plan => {
     return {
       number: plan.number,
       segments: parseSegmentsData(plan.segments),
@@ -142,8 +142,8 @@ function parseSegmentsData(segmentPlan) {
       return {
         type: segment.type,
         time: segment.times.durations.walking,
-        stopNumber: 'stop number',
-        stopName: 'stop name',
+        stopNumber: checkProperty(segment.to.stop, 'key', ''),
+        stopName: checkProperty(segment.to.stop, 'name', 'your destination'),
       }
     } else if (segment.type === 'ride') {
       return {
@@ -163,6 +163,42 @@ function parseSegmentsData(segmentPlan) {
     }
   })
   return parsedSegments;
+}
+
+function checkProperty(property, propKey, message) {
+  if (property === undefined) {
+    return message;
+  } else {
+    return property[`${propKey}`];
+  }
+}
+
+function displayTripDetails(tripData) {
+  tripData[0].segments.forEach(tripSegment => {
+    if (tripSegment.type === 'walk') {
+      if (tripData[0].segments.indexOf(tripSegment) === tripData[0].segments.length - 1) {
+        tripListElem.insertAdjacentHTML('beforeend',
+      `<li>
+        <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to ${tripSegment.stopName}.
+      </li>`);
+      } else {
+        tripListElem.insertAdjacentHTML('beforeend',
+        `<li>
+          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to stop #${tripSegment.stopNumber} - ${tripSegment.stopName}.
+        </li>`);
+      }  
+    } else if (tripSegment.type === 'ride') {
+      tripListElem.insertAdjacentHTML('beforeend',
+      `<li>
+        <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${tripSegment.route} ${tripSegment.routeName} for ${tripSegment.time} minutes.
+      </li>`);
+    } else if (tripSegment.type === 'transfer') {
+      tripListElem.insertAdjacentHTML('beforeend',
+      `<li>
+        <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${tripSegment.fromStopNum} - ${tripSegment.fromStopName} to stop #${tripSegment.toStopNum} - ${tripSegment.toStopName}.
+      </li>`);
+    }
+  });  
 }
 
 originFormElem.addEventListener('submit', event => {
@@ -189,7 +225,7 @@ planTripButton.addEventListener('click', () => {
   if (checkForUserSelection()) {
     callTripData()
     .then(tripData => parseTripData(tripData))
-    .then(data => console.log(data))
+    .then(parsedData => displayTripDetails(parsedData))
   } 
 });
 
