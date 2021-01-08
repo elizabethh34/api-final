@@ -32,10 +32,14 @@ function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
   locationsObjArr.forEach(locationObj => {
     elemToAttachTo.insertAdjacentHTML('beforeend',
     `<li class="location" data-long="${locationObj.center[0]}" data-lat="${locationObj.center[1]}">
-      <div class="name">${locationObj.text}</div>
+      <div class="name">${getLocationName(locationObj['place_name'])}</div>
       <div>${checkIfLocationHasAddress(locationObj)}</div>
     </li>`);
   });
+}
+
+function getLocationName(locationString) {
+  return locationString.split(',')[0];
 }
 
 function checkIfLocationHasAddress(locationObj) {
@@ -149,7 +153,6 @@ function parseSegmentsData(segmentPlan) {
       return {
         type: segment.type,
         time: segment.times.durations.riding,
-        route: `Route ${segment.route.number}`,
         routeName: segment.route.name,
       }
     } else if (segment.type === 'transfer') {
@@ -190,7 +193,7 @@ function displayTripDetails(tripData) {
     } else if (tripSegment.type === 'ride') {
       tripListElem.insertAdjacentHTML('beforeend',
       `<li>
-        <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${tripSegment.route} ${tripSegment.routeName} for ${tripSegment.time} minutes.
+        <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${tripSegment.routeName} for ${tripSegment.time} minutes.
       </li>`);
     } else if (tripSegment.type === 'transfer') {
       tripListElem.insertAdjacentHTML('beforeend',
