@@ -27,8 +27,8 @@ function getPossibleLocationsData(userSearch) {
   .catch(error => console.log(error));
 }
 
-function getTripData(originLat, originLon, DestLat, DestLon) {
-  return fetch(`${transitBaseUrl}${transitEndpoint}.json?${transitAPIKey}&${transitOriginParam}${originLat},${originLon}&${transitDestinationParam}${DestLat},${DestLon}`)
+function getTripData(originLat, originLon, destLat, destLon) {
+  return fetch(`${transitBaseUrl}${transitEndpoint}.json?${transitAPIKey}&${transitOriginParam}${originLat},${originLon}&${transitDestinationParam}${destLat},${destLon}`)
   .then(response => response.json())
   .catch(error => console.log(error));
 }
