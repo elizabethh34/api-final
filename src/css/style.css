@@ -61,18 +61,19 @@ input:focus {
   width: 100%;
 }
 
-.my-trip {
+.trip-list {
   width: 75%;
   margin: auto;
+  margin-bottom: 60px;
 }
 
-.my-trip li, .trip-list li {
+.trip-list li {
   margin: 10px 0px;
   font-size: 17px;
   display: flex;
 }
 
-.my-trip i {
+.trip-list i {
   margin-right: 15px;
   font-size: 25px;
   align-self: center;
@@ -84,8 +85,4 @@ input:focus {
 
 .alternative {
   display: none;
-}
-
-.trip-list {
-  margin-bottom: 50px;;
 }

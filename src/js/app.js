@@ -59,10 +59,21 @@ function clearLists(element) {
 
 function displayLocationInfo(inputElem, elemToAttachTo) {
   getPossibleLocationsData(inputElem.value)
-  .then(locationData => {
-    clearLists(elemToAttachTo);
-    renderLocationsHTML(locationData, elemToAttachTo);
+  .then(data => {
+    if (checkIfLocationExists(data, elemToAttachTo)) {
+      clearLists(elemToAttachTo);
+      renderLocationsHTML(data, elemToAttachTo);
+    }
   })
+}
+
+function checkIfLocationExists(array, element) {
+  if (array.length === 0) {
+    element.textContent = 'No location with that name found.';
+    return false;
+  } else {
+    return true;
+  }
 }
 
 function changeSelectedClass(element, listType) {
@@ -126,7 +137,13 @@ function callTripData() {
   originLongitude = selectedOrigin.getAttribute('data-long');
   destinationLatitude = selectedDestination.getAttribute('data-lat');
   destinationLongitude = selectedDestination.getAttribute('data-long');
-  return getTripData(originLatitude, originLongitude, destinationLatitude,destinationLongitude);
+  if (checkIfOriginAndDestSame(originLatitude, originLongitude, destinationLatitude, destinationLongitude)) {
+    return getTripData(originLatitude, originLongitude, destinationLatitude,destinationLongitude)
+          .then(tripData => parseTripData(tripData))
+          .then(parsedData => checkTripData(parsedData))
+  } else {
+    recommenedContainer.textContent = 'Origin and Destination are the same: Please enter unique locations';
+  }  
 }
 
 function parseTripData(tripData) {
@@ -141,17 +158,34 @@ function parseTripData(tripData) {
   return parsedTripData;
 }
 
+function checkUndefined(tripPlan) {
+  if (tripPlan.to === undefined) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 function parseSegmentsData(segmentPlan) {
   let parsedSegments;
 
   parsedSegments = segmentPlan.map(segment => {
     if (segment.type === 'walk') {
-      return {
-        type: segment.type,
-        time: segment.times.durations.walking,
-        stopNumber: checkProperty(segment.to.stop, 'key', ''),
-        stopName: checkProperty(segment.to.stop, 'name', 'your destination'),
-      }
+      if (checkUndefined(segment)) {
+        return {
+          type: segment.type,
+          time: segment.times.durations.walking,
+          stopNumber: checkProperty(segment.to.stop, 'key', ''),
+          stopName: checkProperty(segment.to.stop, 'name', 'your destination'),
+        }
+      } else {
+        return {
+          type: segment.type,
+          time: segment.times.durations.walking,
+          stopNumber: '',
+          stopName: 'your destination',
+        }
+      }  
     } else if (segment.type === 'ride') {
       return {
         type: segment.type,
@@ -202,6 +236,14 @@ function checkTripData(tripDataArray) {
   }
 }
 
+function checkIfOriginAndDestSame(originLat, originLon, destLat, destLon) {
+  if (originLat === destLat && originLon === destLon) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 function createTripLi(tripSegment) {
   let liElem;
   
@@ -237,6 +279,13 @@ function createTripUls(tripData, heading, container) {
   }); 
 }
 
+function resetBusContainer() {
+  recommendedTripHeading.style.display = 'none';
+  alternativeTripHeading.style.display = 'none';
+  recommenedContainer.innerHTML = '';
+  alternativeContainer.innerHTML = '';
+}
+
 originFormElem.addEventListener('submit', event => {
   event.preventDefault();
   displayLocationInfo(originInputElem, originsListElem);
@@ -258,10 +307,10 @@ destinationsListElem.addEventListener('click', event => {
 });
 
 planTripButton.addEventListener('click', () => {
+  resetBusContainer();
+  
   if (checkForUserSelection()) {
-    callTripData()
-    .then(tripData => parseTripData(tripData))
-    .then(parsedData => checkTripData(parsedData))
-  } 
+    callTripData();    
+  }   
 });
 
