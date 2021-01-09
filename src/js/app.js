@@ -24,11 +24,13 @@ function getPossibleLocationsData(userSearch) {
   return fetch(`${mapboxBaseUrl}${mapboxEndpoint}${userSearch}.json?${mapboxBboxParam}&${mapboxLimitParam}&${mapboxAccessToken}`)
   .then(response => response.json())
   .then(data => data.features)
+  .catch(error => console.log(error));
 }
 
 function getTripData(originLat, originLon, DestLat, DestLon) {
   return fetch(`${transitBaseUrl}${transitEndpoint}.json?${transitAPIKey}&${transitOriginParam}${originLat},${originLon}&${transitDestinationParam}${DestLat},${DestLon}`)
   .then(response => response.json())
+  .catch(error => console.log(error));
 }
 
 function renderLocationsHTML(locationsObjArr, elemToAttachTo) {
@@ -141,6 +143,7 @@ function callTripData() {
     return getTripData(originLatitude, originLongitude, destinationLatitude,destinationLongitude)
           .then(tripData => parseTripData(tripData))
           .then(parsedData => checkTripData(parsedData))
+          .catch(error => console.log(error));
   } else {
     recommenedContainer.textContent = 'Origin and Destination are the same: Please enter unique locations';
   }  
