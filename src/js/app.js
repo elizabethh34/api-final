@@ -5,8 +5,8 @@ const destinationInputElem = document.querySelector('.destination-form input');
 const originsListElem = document.querySelector('.origins');
 const destinationsListElem = document.querySelector('.destinations');
 const planTripButton = document.querySelector('.plan-trip');
-const tripListElem = document.querySelector('.my-trip');
 const recommendedTripHeading = document.querySelector('.recommended');
+const recommenedContainer = document.querySelector('.recommended-container');
 const alternativeTripHeading = document.querySelector('.alternative');
 const alternativeContainer = document.querySelector('.alternative-container');
 const mapboxBaseUrl = 'https://api.mapbox.com/geocoding/v5/';
@@ -77,13 +77,13 @@ function changeSelectedClass(element, listType) {
 function checkForUserSelection() {
   const selectedOrigins = document.querySelectorAll('.origins .selected');
   const selectedDestinations = document.querySelectorAll('.destinations .selected');
-  tripListElem.innerHTML = '';
+  recommenedContainer.innerHTML = '';
   
   if (selectedOrigins.length === 0) {
-    tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a starting location.</li>');
+    recommenedContainer.insertAdjacentHTML('afterbegin', '<p>Please select a starting location.</p>');
     return false;
   } else if (selectedDestinations.length === 0) {
-    tripListElem.insertAdjacentHTML('afterbegin', '<li>Please select a destination.</li>');
+    recommenedContainer.insertAdjacentHTML('afterbegin', '<p>Please select a destination.</p>');
     return false;
   } else {
     return true;
@@ -188,6 +188,20 @@ function checkRouteName(routeObj) {
   }
 }
 
+function checkTripData(tripDataArray) {
+  let alternativeArray = tripDataArray.slice(1);
+  let recommendedArray = tripDataArray.slice(0, 1);
+
+  if (tripDataArray.length === 0) {
+    recommenedContainer.textContent = 'Sorry, no trip options available';
+  } else if (tripDataArray.length === 1) {
+    createTripUls(recommendedArray, recommendedTripHeading, recommenedContainer);
+  } else {
+    createTripUls(recommendedArray, recommendedTripHeading, recommenedContainer);
+    createTripUls(alternativeArray, alternativeTripHeading, alternativeContainer);
+  }
+}
+
 function createTripLi(tripSegment) {
   let liElem;
   
@@ -205,37 +219,6 @@ function createTripLi(tripSegment) {
   return liElem;
 }
 
-//change route name in ride
-/*function displayTripDetails(tripData) {
-  const recommendedTrip = tripData[0];
-  recommendedTripHeading.style.display = 'block';
-  recommendedTrip.segments.forEach(tripSegment => {
-    if (tripSegment.type === 'walk') {
-      if (recommendedTrip.segments.indexOf(tripSegment) === recommendedTrip.segments.length - 1) {
-        tripListElem.insertAdjacentHTML('beforeend',
-      `<li>
-        <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to ${tripSegment.stopName}.
-      </li>`);
-      } else {
-        tripListElem.insertAdjacentHTML('beforeend',
-        `<li>
-          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to stop #${tripSegment.stopNumber} - ${tripSegment.stopName}.
-        </li>`);
-      }  
-    } else if (tripSegment.type === 'ride') {
-      tripListElem.insertAdjacentHTML('beforeend',
-      `<li>
-        <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${tripSegment.routeName} for ${tripSegment.time} minutes.
-      </li>`);
-    } else if (tripSegment.type === 'transfer') {
-      tripListElem.insertAdjacentHTML('beforeend',
-      `<li>
-        <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${tripSegment.fromStopNum} - ${tripSegment.fromStopName} to stop #${tripSegment.toStopNum} - ${tripSegment.toStopName}.
-      </li>`);
-    }
-  });  
-}*/
-
 function createAllTripLi(tripData) {
   let allLi;
 
@@ -252,8 +235,6 @@ function createTripUls(tripData, heading, container) {
   tripData.forEach(trip => {
     container.insertAdjacentHTML('beforeend', `<ul class="trip-list">${createAllTripLi(trip)}</ul>`);
   });
-  const tripList = document.querySelector('.trip-list');
-  console.log(tripList.firstChild)
 }
 
 originFormElem.addEventListener('submit', event => {
@@ -280,10 +261,7 @@ planTripButton.addEventListener('click', () => {
   if (checkForUserSelection()) {
     callTripData()
     .then(tripData => parseTripData(tripData))
-    .then(data => {
-      createTripUls(data, alternativeTripHeading, alternativeContainer)
-    })
-    //.then(parsedData => displayTripDetails(parsedData))
+    .then(parsedData => checkTripData(parsedData))
   } 
 });
 
