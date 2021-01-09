@@ -220,7 +220,7 @@ function createTripLi(tripSegment) {
 }
 
 function createAllTripLi(tripData) {
-  let allLi;
+  let allLi = '';
 
   tripData.segments.forEach(item => {
     allLi += createTripLi(item)
@@ -234,7 +234,7 @@ function createTripUls(tripData, heading, container) {
 
   tripData.forEach(trip => {
     container.insertAdjacentHTML('beforeend', `<ul class="trip-list">${createAllTripLi(trip)}</ul>`);
-  });
+  }); 
 }
 
 originFormElem.addEventListener('submit', event => {
