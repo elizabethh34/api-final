@@ -6,6 +6,7 @@ const sourcemaps = require('gulp-sourcemaps');
 const concat = require('gulp-concat');
 const babel = require('gulp-babel');
 const uglify = require('gulp-uglify');
+const imagemin = require('gulp-imagemin');
 
 function htmlTask() {
   return src('src/*.html')
@@ -33,7 +34,14 @@ function scriptsTask() {
     .pipe(dest('dist/js'))
 }
 
+function imagestask() {
+  return src('src/images/*')
+    .pipe(imagemin())
+    .pipe(dest('dist/images'))
+}
+
 exports.html = htmlTask;
 exports.styles = stylesTask;
 exports.scripts = scriptsTask;
-exports.default = parallel(htmlTask, stylesTask, scriptsTask);
+exports.images = imagestask;
+exports.default = parallel(htmlTask, stylesTask, scriptsTask, imagestask);
