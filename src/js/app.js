@@ -6,6 +6,9 @@ const originsListElem = document.querySelector('.origins');
 const destinationsListElem = document.querySelector('.destinations');
 const planTripButton = document.querySelector('.plan-trip');
 const tripListElem = document.querySelector('.my-trip');
+const recommendedTripHeading = document.querySelector('.recommended');
+const alternativeTripHeading = document.querySelector('.alternative');
+const alternativeContainer = document.querySelector('.alternative-container');
 const mapboxBaseUrl = 'https://api.mapbox.com/geocoding/v5/';
 const mapboxEndpoint = 'mapbox.places/';
 const mapboxLimitParam = 'limit=10';
@@ -153,6 +156,7 @@ function parseSegmentsData(segmentPlan) {
       return {
         type: segment.type,
         time: segment.times.durations.riding,
+        routeNum: `Route ${segment.route.number}`,
         routeName: segment.route.name,
       }
     } else if (segment.type === 'transfer') {
@@ -176,10 +180,38 @@ function checkProperty(property, propKey, message) {
   }
 }
 
-function displayTripDetails(tripData) {
-  tripData[0].segments.forEach(tripSegment => {
+function checkRouteName(routeObj) {
+  if (routeObj.routeName === undefined) {
+    return routeObj.routeNum;
+  } else {
+    return routeObj.routeName;
+  }
+}
+
+function createTripLi(tripSegment) {
+  let liElem;
+  
+  if (tripSegment.type === 'walk') {
+    if (tripSegment.stopNumber === '') {
+      liElem = `<li><i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to ${tripSegment.stopName}.</li>`;
+    } else {
+      liElem = `<li><i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to stop #${tripSegment.stopNumber} - ${tripSegment.stopName}.</li>`;
+    }
+  } else if (tripSegment.type === 'ride') {
+    liElem = `<li><i class="fas fa-bus" aria-hidden="true"></i>Ride the ${checkRouteName(tripSegment)} for ${tripSegment.time} minutes.</li>`;
+  } else if (tripSegment.type === 'transfer') {
+    liElem = `<li><i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${tripSegment.fromStopNum} - ${tripSegment.fromStopName} to stop #${tripSegment.toStopNum} - ${tripSegment.toStopName}.</li>`;
+  }
+  return liElem;
+}
+
+//change route name in ride
+/*function displayTripDetails(tripData) {
+  const recommendedTrip = tripData[0];
+  recommendedTripHeading.style.display = 'block';
+  recommendedTrip.segments.forEach(tripSegment => {
     if (tripSegment.type === 'walk') {
-      if (tripData[0].segments.indexOf(tripSegment) === tripData[0].segments.length - 1) {
+      if (recommendedTrip.segments.indexOf(tripSegment) === recommendedTrip.segments.length - 1) {
         tripListElem.insertAdjacentHTML('beforeend',
       `<li>
         <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${tripSegment.time} minutes to ${tripSegment.stopName}.
@@ -202,6 +234,26 @@ function displayTripDetails(tripData) {
       </li>`);
     }
   });  
+}*/
+
+function createAllTripLi(tripData) {
+  let allLi;
+
+  tripData.segments.forEach(item => {
+    allLi += createTripLi(item)
+  })
+  return allLi;
+}
+
+function createTripUls(tripData, heading, container) {
+  heading.style.display = 'block';
+  container.innerHTML = '';
+
+  tripData.forEach(trip => {
+    container.insertAdjacentHTML('beforeend', `<ul class="trip-list">${createAllTripLi(trip)}</ul>`);
+  });
+  const tripList = document.querySelector('.trip-list');
+  console.log(tripList.firstChild)
 }
 
 originFormElem.addEventListener('submit', event => {
@@ -228,7 +280,10 @@ planTripButton.addEventListener('click', () => {
   if (checkForUserSelection()) {
     callTripData()
     .then(tripData => parseTripData(tripData))
-    .then(parsedData => displayTripDetails(parsedData))
+    .then(data => {
+      createTripUls(data, alternativeTripHeading, alternativeContainer)
+    })
+    //.then(parsedData => displayTripDetails(parsedData))
   } 
 });
 

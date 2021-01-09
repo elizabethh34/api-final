@@ -66,7 +66,7 @@ input:focus {
   margin: auto;
 }
 
-.my-trip li {
+.my-trip li, .trip-list li {
   margin: 10px 0px;
   font-size: 17px;
   display: flex;
@@ -76,4 +76,16 @@ input:focus {
   margin-right: 15px;
   font-size: 25px;
   align-self: center;
+}
+
+.recommended {
+  display: none;
+}
+
+.alternative {
+  display: none;
+}
+
+.trip-list {
+  margin-bottom: 50px;;
 }
